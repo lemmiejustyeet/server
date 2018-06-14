@@ -6,12 +6,16 @@
   "author": "DusterTheFirst",
   "license": "GPL-3.0",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "express": "^4.16.3",
-    "nano": "^6.4.4"
+    "nano": "^6.4.4",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
+    "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.0",
     "@types/nano": "^6.4.5",
-    "@types/node": "^10.3.2"
+    "@types/node": "^10.3.2",
+    "@types/uuid": "^3.4.3"
   }
 }
