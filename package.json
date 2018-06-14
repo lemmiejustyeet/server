@@ -1,0 +1,17 @@
+{
+  "name": "mashupcdn",
+  "version": "0.0.1",
+  "description": "CDN for Matt's Mashups",
+  "main": "src/app.js",
+  "author": "DusterTheFirst",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "express": "^4.16.3",
+    "nano": "^6.4.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.16.0",
+    "@types/nano": "^6.4.5",
+    "@types/node": "^10.3.2"
+  }
+}

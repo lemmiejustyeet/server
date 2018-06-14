@@ -1,0 +1,4 @@
+*.crt
+node_modules/
+pacjage-lock.json
+*.sqlite
