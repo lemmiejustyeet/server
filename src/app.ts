@@ -29,6 +29,8 @@ let example: Song = {
 
 // Song
 interface Song {
+    _id?: string;
+    _rev?: string;
     id: string;
     title: string;
     date: number;
@@ -92,13 +94,28 @@ https.createServer({
         console.log("Server started on port 38564")
     );
 
+function cleanAll<T>(songs: T[]) {
+    for (let i in songs) {
+        songs[i] = <any> clean(songs[i]);
+    }
+    return songs;
+}
+function clean<T>(song: T): Song[] {
+    for (let prop in song) {
+        if (prop.startsWith("_"))
+            delete song[prop];
+    }
+
+    return <any>song;
+}
+
 // HANDLERS
 function listAllSongs(req: express.Request, res: express.Response) {
     db.list({ include_docs: true }, (err, body, headers) => {
         if (err)
             res.send(err);
         else
-            res.send(body);
+            res.send(cleanAll(body.rows.map(x => x.doc)));
     });
 }
 
@@ -117,20 +134,70 @@ function createASong(req: express.Request, res: express.Response) {
         if (err)
             res.send(err);
         else {
-            res.setHeader("x-ree", JSON.stringify(song))
             res.send(body);
         }
     });
 }
 
 function readASong(req: express.Request, res: express.Response) {
-
+    db.get(req.params.id, (err, body, headers) => {
+        if (err)
+            res.send(err);
+        else {
+            res.send(clean(body));
+        }
+    });
 }
 
 function updateASong(req: express.Request, res: express.Response) {
+    // ADD AUTHENTICATION
+    res.send("Not finished, unsecure")
 
+    return;
+    db.get(req.params.id, (err, body, headers) => {
+        if (err)
+            res.send(err);
+        else {
+            let song = req.body as Song;
+            try {
+                song = verifySong(song);
+                song.id = body._id;
+            } catch (e) {
+                res.json({
+                    message: e.message,
+                    name: e.name
+                });
+                return;
+            }
+            (song as any)._id = body._id;
+            (song as any)._rev = body._rev;
+            db.insert(song, (err, body, headers) => {
+                if (err)
+                    res.send(err);
+                else {
+                    res.send(body);
+                }
+            });
+        }
+    })
 }
 
 function deleteASong(req: express.Request, res: express.Response) {
+    // ADD AUTHENTICATION
+    res.send("Not finished, unsecure")
 
+    return;
+    db.get(req.params.id, (err, body, headers) => {
+        if (err)
+            res.send(err);
+        else {
+            db.destroy(body._id, body._rev, (err, body, headers) => {
+                if (err) {
+                    res.send(err);
+                } else {
+                    res.send(body);
+                }
+            });
+        }
+    })
 }
