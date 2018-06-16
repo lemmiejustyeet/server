@@ -4,7 +4,7 @@ import * as https from "https";
 import * as fs from "fs";
 import * as path from "path";
 import * as nano from "nano";
-import * as uuid from "uuid";
+import { Song, verifySong, cleanSong, cleanAllSongs } from "./song";
 
 // Create the express app
 const app = express();
@@ -12,8 +12,7 @@ const db = nano("http://localhost:5984/matts-mashups") as nano.DocumentScope<Son
 
 // Example song
 let example: Song = {
-    id: "thisismyid",
-    title: "thisisatitle",
+    title: "LaunchBeach",
     date: Date.now(),
     image_url: "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_150x54dp.png",
     url: "https://cdn.discordapp.com/attachments/446329495197057036/452971185530208275/LaunchBeach.mp3",
@@ -27,43 +26,6 @@ let example: Song = {
     }
 };
 
-// Song
-interface Song {
-    _id?: string;
-    _rev?: string;
-    id: string;
-    title: string;
-    date: number;
-    image_url?: string;
-    url: string;
-    othersongs?: string[];
-    ratings?: {
-        up: number;
-        down: number;
-    };
-}
-function verifySong(song: Song): Song {
-    if (!song.id)
-        song.id = uuid();
-
-    if (!song.title)
-        song.title = "unnamed"
-
-    if (!song.date)
-        song.date = Date.now()
-
-    if (!song.url)
-        throw TypeError("Song requires property 'url'")
-
-    if (!song.ratings)
-        song.ratings = {
-            up: 0,
-            down: 0
-        }
-
-    return song;
-}
-
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
 
@@ -76,10 +38,7 @@ app.route("/songs/:id")
     .put(updateASong)
     .delete(deleteASong);
 
-// app.use("*", (req, res, next) => {
-//     res.status(404);
-//     res.send();
-// });
+
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     res.status(500);
     res.send();
@@ -94,32 +53,23 @@ https.createServer({
         console.log("Server started on port 38564")
     );
 
-function cleanAll<T>(songs: T[]) {
-    for (let i in songs) {
-        songs[i] = <any> clean(songs[i]);
-    }
-    return songs;
-}
-function clean<T>(song: T): Song[] {
-    for (let prop in song) {
-        if (prop.startsWith("_"))
-            delete song[prop];
-    }
 
-    return <any>song;
-}
 
 // HANDLERS
 function listAllSongs(req: express.Request, res: express.Response) {
-    db.list({ include_docs: true }, (err, body, headers) => {
+    db.list({ include_docs: true }, (err, body) => {
         if (err)
             res.send(err);
         else
-            res.send(cleanAll(body.rows.map(x => x.doc)));
+            res.send(cleanAllSongs(body.rows.map(x => x.doc)));
     });
 }
 
 function createASong(req: express.Request, res: express.Response) {
+    // ADD AUTHENTICATION
+    res.send("Not finished, unsecure");
+
+    return;
     let song = req.body as Song;
     try {
         song = verifySong(song);
@@ -130,7 +80,7 @@ function createASong(req: express.Request, res: express.Response) {
         });
         return;
     }
-    db.insert(song, song.id, (err, body, headers) => {
+    db.insert(song, (err, body) => {
         if (err)
             res.send(err);
         else {
@@ -140,28 +90,28 @@ function createASong(req: express.Request, res: express.Response) {
 }
 
 function readASong(req: express.Request, res: express.Response) {
-    db.get(req.params.id, (err, body, headers) => {
+    db.get(req.params.id, (err, body) => {
         if (err)
             res.send(err);
         else {
-            res.send(clean(body));
+            res.send(cleanSong(body));
         }
     });
 }
 
 function updateASong(req: express.Request, res: express.Response) {
     // ADD AUTHENTICATION
-    res.send("Not finished, unsecure")
+    res.send("Not finished, unsecure");
 
     return;
-    db.get(req.params.id, (err, body, headers) => {
+    db.get(req.params.id, (err, body) => {
         if (err)
             res.send(err);
         else {
             let song = req.body as Song;
             try {
                 song = verifySong(song);
-                song.id = body._id;
+                song._id = body._id;
             } catch (e) {
                 res.json({
                     message: e.message,
@@ -169,35 +119,35 @@ function updateASong(req: express.Request, res: express.Response) {
                 });
                 return;
             }
-            (song as any)._id = body._id;
-            (song as any)._rev = body._rev;
-            db.insert(song, (err, body, headers) => {
-                if (err)
-                    res.send(err);
+            song._id = body._id;
+            song._rev = body._rev;
+            db.insert(song, (err1, body1) => {
+                if (err1)
+                    res.send(err1);
                 else {
-                    res.send(body);
+                    res.send(body1);
                 }
             });
         }
-    })
+    });
 }
 
 function deleteASong(req: express.Request, res: express.Response) {
     // ADD AUTHENTICATION
-    res.send("Not finished, unsecure")
+    res.send("Not finished, unsecure");
 
     return;
-    db.get(req.params.id, (err, body, headers) => {
+    db.get(req.params.id, (err, body) => {
         if (err)
             res.send(err);
         else {
-            db.destroy(body._id, body._rev, (err, body, headers) => {
-                if (err) {
-                    res.send(err);
+            db.destroy(body._id, body._rev, (err1, body1) => {
+                if (err1) {
+                    res.send(err1);
                 } else {
-                    res.send(body);
+                    res.send(body1);
                 }
             });
         }
-    })
+    });
 }
