@@ -35,6 +35,14 @@ export function readToken(req: express.Request, res: express.Response) {
 }
 
 export async function me(req: express.Request, res: express.Response) {
+    if (!req.header("Authorization")) {
+        res.json({
+            message: "Unauthorized",
+            code: 0
+        });
+        return;
+    }
+
     try {
         res.json(await getUser(req.header("Authorization")));
     } catch (e) {

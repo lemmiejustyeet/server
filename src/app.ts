@@ -12,6 +12,12 @@ const app = express();
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
 
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "authorization");
+    next();
+});
+
 app.route("/songs")
     .get(db.listAllSongs)
     .post(db.createASong);
