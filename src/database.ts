@@ -1,5 +1,5 @@
 import * as nano from "nano";
-import { Song, verifySong, cleanSong, cleanAllSongs } from "./song";
+import { Song, verifySong} from "./song";
 import * as express from "express";
 import { isUserElevated } from "./auth";
 
@@ -25,9 +25,15 @@ const example: Song = {
 export function listAllSongs(req: express.Request, res: express.Response) {
     db.list({ include_docs: true }, (err, body) => {
         if (err)
-            res.send(err);
+            res.send({
+                message: err.message,
+                name: err.name,
+                error: err.error,
+                reason: err.reason,
+                statusCode: err.statusCode
+            });
         else
-            res.send(cleanAllSongs(body.rows.map(x => x.doc)));
+            res.send(body.rows.map(x => x.doc));
     });
 }
 
@@ -45,7 +51,13 @@ export function createASong(req: express.Request, res: express.Response) {
         }
         db.insert(song, (err, body) => {
             if (err)
-                res.send(err);
+                res.send({
+                    message: err.message,
+                    name: err.name,
+                    error: err.error,
+                    reason: err.reason,
+                    statusCode: err.statusCode
+                });
             else {
                 res.send(body);
             }
@@ -61,9 +73,15 @@ export function createASong(req: express.Request, res: express.Response) {
 export function readASong(req: express.Request, res: express.Response) {
     db.get(req.params.id, (err, body) => {
         if (err)
-            res.send(err);
+            res.send({
+                message: err.message,
+                name: err.name,
+                error: err.error,
+                reason: err.reason,
+                statusCode: err.statusCode
+            });
         else {
-            res.send(cleanSong(body));
+            res.send(body);
         }
     });
 }
@@ -72,7 +90,13 @@ export function updateASong(req: express.Request, res: express.Response) {
     if (req.header("Authorization") && isUserElevated(req.header("Authorization"))) {
         db.get(req.params.id, (err, body) => {
             if (err)
-                res.send(err);
+                res.send({
+                    message: err.message,
+                    name: err.name,
+                    error: err.error,
+                    reason: err.reason,
+                    statusCode: err.statusCode
+                });
             else {
                 let song = req.body as Song;
                 try {
@@ -89,7 +113,13 @@ export function updateASong(req: express.Request, res: express.Response) {
                 song._rev = body._rev;
                 db.insert(song, (err1, body1) => {
                     if (err1)
-                        res.send(err1);
+                        res.send({
+                            message: err.message,
+                            name: err.name,
+                            error: err.error,
+                            reason: err.reason,
+                            statusCode: err.statusCode
+                        });
                     else {
                         res.send(body1);
                     }
@@ -108,11 +138,23 @@ export function deleteASong(req: express.Request, res: express.Response) {
     if (req.header("Authorization") && isUserElevated(req.header("Authorization"))) {
         db.get(req.params.id, (err, body) => {
             if (err)
-                res.send(err);
+                res.send({
+                    message: err.message,
+                    name: err.name,
+                    error: err.error,
+                    reason: err.reason,
+                    statusCode: err.statusCode
+                });
             else {
                 db.destroy(body._id, body._rev, (err1, body1) => {
                     if (err1) {
-                        res.send(err1);
+                        res.send({
+                            message: err.message,
+                            name: err.name,
+                            error: err.error,
+                            reason: err.reason,
+                            statusCode: err.statusCode
+                        });
                     } else {
                         res.send(body1);
                     }

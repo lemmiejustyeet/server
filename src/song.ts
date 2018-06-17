@@ -42,16 +42,16 @@ export function verifySong(song: Song): Song {
     };
 }
 
-export function cleanAllSongs<T>(songs: T[]) {
-    for (let i in songs) {
-        songs[i] = cleanSong(songs[i]) as any;
-    }
-    return songs;
-}
-export function cleanSong<T>(song: T): Song[] {
-    for (let prop in song) {
-        if (prop.startsWith("_"))
-            delete song[prop];
-    }
-    return song as any;
-}
+// export function cleanAllSongs<T>(songs: T[]) {
+//     for (let i in songs) {
+//         songs[i] = cleanSong(songs[i]) as any;
+//     }
+//     return songs;
+// }
+// export function cleanSong<T>(song: T): Song[] {
+//     for (let prop in song) {
+//         if (prop.startsWith("_"))
+//             delete song[prop];
+//     }
+//     return song as any;
+// }
