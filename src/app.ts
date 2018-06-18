@@ -1,10 +1,10 @@
-import * as express from "express";
 import * as bodyparser from "body-parser";
-import * as https from "https";
+import * as express from "express";
 import * as fs from "fs";
+import * as https from "https";
 import * as path from "path";
-import * as db from "./database";
 import * as auth from "./auth";
+import * as db from "./database";
 
 // Create the express app
 const app = express();
@@ -14,7 +14,8 @@ app.use(bodyparser.json());
 
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "authorization");
+    res.setHeader("Access-Control-Allow-Headers", "Authorization");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
     next();
 });
 
@@ -32,6 +33,9 @@ app.route("/auth/discord")
 
 app.route("/auth/discord/token")
     .get(auth.readToken);
+
+app.route("/auth/discord/token/revoke")
+    .get(auth.revokeToken);
 
 app.route("/auth/discord/@me")
     .post(auth.me);

@@ -1,4 +1,4 @@
-import * as uuid from "uuid";
+// import * as uuid from "uuid";
 
 /**
  * Song type
@@ -28,7 +28,7 @@ export function verifySong(song: Song): Song {
         throw TypeError("Song requires property 'url'");
 
     return {
-        _id: song._id || uuid(),
+        _id: song._id, // || uuid(),
         _rev: song._rev,
         title: song.title,      // !
         date: song.date || Date.now(),

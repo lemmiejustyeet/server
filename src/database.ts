@@ -1,7 +1,7 @@
-import * as nano from "nano";
-import { Song, verifySong} from "./song";
 import * as express from "express";
-import { isUserElevated } from "./auth";
+import * as nano from "nano";
+import { getUser } from "./auth";
+import { Song, verifySong} from "./song";
 
 const db = nano("http://localhost:5984/matts-mashups") as nano.DocumentScope<Song>;
 
@@ -37,8 +37,8 @@ export function listAllSongs(req: express.Request, res: express.Response) {
     });
 }
 
-export function createASong(req: express.Request, res: express.Response) {
-    if (req.header("Authorization") && isUserElevated(req.header("Authorization"))) {
+export async function createASong(req: express.Request, res: express.Response) {
+    if (req.header("Authorization") && (await getUser(req.header("Authorization"))).elevated) {
         let song = req.body as Song;
         try {
             song = verifySong(song);
@@ -86,8 +86,8 @@ export function readASong(req: express.Request, res: express.Response) {
     });
 }
 
-export function updateASong(req: express.Request, res: express.Response) {
-    if (req.header("Authorization") && isUserElevated(req.header("Authorization"))) {
+export async function updateASong(req: express.Request, res: express.Response) {
+    if (req.header("Authorization") && (await getUser(req.header("Authorization"))).elevated) {
         db.get(req.params.id, (err, body) => {
             if (err)
                 res.send({
@@ -134,8 +134,8 @@ export function updateASong(req: express.Request, res: express.Response) {
     }
 }
 
-export function deleteASong(req: express.Request, res: express.Response) {
-    if (req.header("Authorization") && isUserElevated(req.header("Authorization"))) {
+export async function deleteASong(req: express.Request, res: express.Response) {
+    if (req.header("Authorization") && (await getUser(req.header("Authorization"))).elevated) {
         db.get(req.params.id, (err, body) => {
             if (err)
                 res.send({

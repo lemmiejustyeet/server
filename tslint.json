@@ -34,6 +34,11 @@
             true,
             "allow-null-check",
             "allow-undefined-check"
-        ]
+        ],
+        "promise-function-async": true,
+        "await-promise": true,
+        "ordered-imports": true,
+        "member-ordering": true,
+        "no-conditional-assignment": true
     }
 }

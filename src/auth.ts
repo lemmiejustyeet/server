@@ -1,8 +1,8 @@
 import * as oauth2 from "client-oauth2";
-import * as fs from "fs";
-import * as path from "path";
 import * as express from "express";
+import * as fs from "fs";
 import * as https from "https";
+import * as path from "path";
 
 const discordAuth = new oauth2({
     clientId: "457551890226610186",
@@ -20,18 +20,28 @@ export function redirectToAuth(req: express.Request, res: express.Response) {
 export function readToken(req: express.Request, res: express.Response) {
     discordAuth.code.getToken(req.originalUrl)
         .then(async (token) => {
-            res.redirect(`http://localhost:3000/#${token.accessToken}`);
+            res.redirect(`${getSecret("websiteurl")}#${token.accessToken}`);
 
             let userinfo = await getUser(token.accessToken);
             console.log("User logged in: ", userinfo.username, userinfo.discriminator, userinfo.id);
         })
         .catch((reason) => {
-            res.json({
-                message: reason.message,
-                body: reason.body.error,
-                code: reason.code
-            });
+            // res.json({
+            //     message: reason.message,
+            //     body: reason.body.error,
+            //     code: reason.code
+            // });
+            res.redirect(getSecret("websiteurl"));
         });
+}
+
+export function revokeToken(req: express.Request, res: express.Response) {
+    https.request({
+        host: "discordapp.com",
+        path: `/api/oauth2/token/revoke?token=${req.params.code}`
+    }, (response) => {
+        res.redirect(`${getSecret("websiteurl")}#revoked`);
+    }).end();
 }
 
 export async function me(req: express.Request, res: express.Response) {
@@ -71,6 +81,7 @@ interface User {
     avatar: string;
     mfa_enabled: boolean;
     email?: string;
+    elevated: boolean;
 }
 
 export async function getUser(token: string): Promise<User> {
@@ -89,16 +100,16 @@ export async function getUser(token: string): Promise<User> {
                 if (parsed.code === 0) {
                     reject(new UnauthorizedError(parsed.message));
                 }
+                parsed.elevated = isUserElevated(parsed.id);
                 resolve(parsed as User);
             });
         }).end();
     });
 }
 
-export async function isUserElevated(token: string) {
-    let user = await getUser(token);
+export async function isUserElevated(id: string) {
     let elevated: string[] = JSON.parse(getSecret("elevated"));
-    return elevated.indexOf(user.id) > -1;
+    return elevated.indexOf(id) > -1;
 }
 
 function getSecret(secret: string): string {
