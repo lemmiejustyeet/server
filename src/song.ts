@@ -12,8 +12,8 @@ export interface Song {
     url: string;
     othersongs?: string[];
     ratings?: {
-        up: number;
-        down: number;
+        up: string[];
+        down: string[];
     };
 }
 /**
@@ -36,8 +36,8 @@ export function verifySong(song: Song): Song {
         url: song.url,          // !
         othersongs: song.othersongs,
         ratings: {
-            up: song.ratings ? song.ratings.up : 0,
-            down: song.ratings ? song.ratings.down : 0,
+            up: song.ratings ? song.ratings.up : [],
+            down: song.ratings ? song.ratings.down : [],
         }
     };
 }

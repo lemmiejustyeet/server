@@ -1,4 +1,5 @@
 import * as bodyparser from "body-parser";
+import * as cors from "cors";
 import * as express from "express";
 import * as fs from "fs";
 import * as https from "https";
@@ -11,13 +12,14 @@ const app = express();
 
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
+app.use(cors());
 
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "Authorization");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
-    next();
-});
+// app.use((req, res, next) => {
+//     res.setHeader("Access-Control-Allow-Origin", "*");
+//     res.setHeader("Access-Control-Allow-Headers", "Authorization,Content-Type");
+//     res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
+//     next();
+// });
 
 app.route("/songs")
     .get(db.listAllSongs)
@@ -27,6 +29,9 @@ app.route("/songs/:id")
     .get(db.readASong)
     .put(db.updateASong)
     .delete(db.deleteASong);
+
+app.route("/songs/:id/vote")
+    .get(db.voteSong);
 
 app.route("/auth/discord")
     .get(auth.redirectToAuth);

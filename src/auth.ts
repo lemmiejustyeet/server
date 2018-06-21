@@ -14,13 +14,13 @@ const discordAuth = new oauth2({
 });
 
 export function redirectToAuth(req: express.Request, res: express.Response) {
-    res.redirect(discordAuth.code.getUri());
+    res.redirect(discordAuth.code.getUri({state: req.header("Referer")}));
 }
 
 export function readToken(req: express.Request, res: express.Response) {
     discordAuth.code.getToken(req.originalUrl)
         .then(async (token) => {
-            res.redirect(`${getSecret("websiteurl")}#${token.accessToken}`);
+            res.redirect(`${req.query.state}#${token.accessToken}`);
 
             let userinfo = await getUser(token.accessToken);
             console.log("User logged in: ", userinfo.username, userinfo.discriminator, userinfo.id);
@@ -31,7 +31,7 @@ export function readToken(req: express.Request, res: express.Response) {
             //     body: reason.body.error,
             //     code: reason.code
             // });
-            res.redirect(getSecret("websiteurl"));
+            res.redirect(req.query.state);
         });
 }
 
@@ -40,7 +40,7 @@ export function revokeToken(req: express.Request, res: express.Response) {
         host: "discordapp.com",
         path: `/api/oauth2/token/revoke?token=${req.params.code}`
     }, (response) => {
-        res.redirect(`${getSecret("websiteurl")}#revoked`);
+        res.redirect(`${req.query.redirect}#revoked`);
     }).end();
 }
 
@@ -107,7 +107,7 @@ export async function getUser(token: string): Promise<User> {
     });
 }
 
-export async function isUserElevated(id: string) {
+export function isUserElevated(id: string) {
     let elevated: string[] = JSON.parse(getSecret("elevated"));
     return elevated.indexOf(id) > -1;
 }
